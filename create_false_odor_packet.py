@@ -48,29 +48,36 @@ def make_odor_movie(wind_speed):
     return odor_movie
     
     
-wind_speed = 0.4
-odor_movie = make_odor_movie(wind_speed)
-fig = plt.figure()
-
-frame = 0
-
-im = plt.imshow(odor_movie[frame,:,:], cmap=plt.get_cmap('jet'))
-
-def updatefig(*args):
-    global frame
-    frame += 1
+def make_default_odor_movie():
+    wind_speed = 0.4
+    odor_movie = make_odor_movie(wind_speed)
+    return odor_movie
     
-    if frame >= odor_movie.shape[0]:
-        frame = 0
-        
-    im.set_array(odor_movie[frame,:,:])
-    return im,
+def play_movie(odor_movie=None)
+    if odor_movie is None:
+        odor_movie = get_default_odor_movie()
 
-ani = animation.FuncAnimation(fig, updatefig, interval=50, blit=True)
-plt.show()
+    fig = plt.figure()
+
+    frame = 0
+
+    im = plt.imshow(odor_movie[frame,:,:], cmap=plt.get_cmap('jet'))
+
+    def updatefig(*args):
+        global frame
+        frame += 1
         
-        
-        
+        if frame >= odor_movie.shape[0]:
+            frame = 0
+            
+        im.set_array(odor_movie[frame,:,:])
+        return im,
+
+    ani = animation.FuncAnimation(fig, updatefig, interval=50, blit=True)
+    plt.show()
+            
+            
+            
         
         
         
