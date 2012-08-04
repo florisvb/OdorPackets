@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import odor_dataset as od
 
 def make_gaussian(size, center, fwhm = 20):
     """ Make a square gaussian kernel.
@@ -18,6 +19,9 @@ def make_gaussian(size, center, fwhm = 20):
     y0 = center[1]
     return np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
 
+def mm_to_pixel(val):
+    # blank function for future use
+    return int(val*1000)
 
 def make_odor_movie(wind_speed):
     
@@ -33,6 +37,7 @@ def make_odor_movie(wind_speed):
     odor_movie = np.zeros([n_frames, pixels[1], pixels[0]])
     t = 0
     dt = 1/framerate
+    timestamps = []
     
     for i in range(n_frames):
         
@@ -43,17 +48,19 @@ def make_odor_movie(wind_speed):
         frame = make_gaussian(pixels, center, fwhm=100)
         odor_movie[i,:,:] = frame
         
+        timestamps.append(t)
         t += dt
+    timestamps = np.array(timestamps)
         
-    return odor_movie
+    return odor_movie, timestamps
     
     
 def make_default_odor_movie():
     wind_speed = 0.4
-    odor_movie = make_odor_movie(wind_speed)
-    return odor_movie
+    odor_movie, timestamps = make_odor_movie(wind_speed)
+    return odor_movie, timestamps
     
-def play_movie(odor_movie=None)
+def play_movie(odor_movie=None):
     if odor_movie is None:
         odor_movie = get_default_odor_movie()
 
@@ -77,7 +84,43 @@ def play_movie(odor_movie=None)
     plt.show()
             
             
+def make_false_odor_trace(odor_movie, timestamps, position):
+    
+    y = mm_to_pixel(position[0])
+    x = mm_to_pixel(position[1])
+    print x, y
+    trace = odor_movie[:,x,y]
+    
+    odor_trace = od.Odor_Trace(position)
+    odor_trace.trace = trace
+    odor_trace.timestamps = timestamps
+    
+    return odor_trace
+    
+
+def make_false_odor_dataset(odor_movie=None, timestamps=None, positions=None):
+    
+    if odor_movie is None:
+        odor_movie, timestamps = make_default_odor_movie()
+    
+    if positions is None:
+        positions = [[0, .165], [.1, .165], [.2, .165], [.3, .165], [.4, .165], [.5, .165], [.6, .165], 
+                     [0, .175], [.1, .175], [.2, .175], [.3, .175], [.4, .175], [.5, .175], [.6, .175],
+                     [0, .155], [.1, .155], [.2, .155], [.3, .155], [.4, .155], [.5, .155], [.6, .155]]
+        for position in positions:
+            position = np.array(positions)
             
+    odor_dataset = od.Dataset()
+            
+    key = 0
+    for position in positions:
+        odor_trace = make_false_odor_trace(odor_movie, timestamps, position)
+        odor_dataset.odor_traces.setdefault(key, odor_trace)
+        key += 1
+    
+    return odor_dataset 
+       
+    
         
         
         
