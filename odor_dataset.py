@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-import fit_data.fit_data as fit_data
+import data_fit
 
 class Dataset():
     def __init__(self):
@@ -49,7 +49,7 @@ def save_dataset(dataset, name):
     fd.close()
     
     
-def calc_windspeed(dataset, axis=0, position=[0,.165], max_error=0.001):
+def calc_windspeed(dataset, axis=0, position=[0,.16], max_error=0.001):
     keys = get_traces_along_axis(dataset, axis, position, max_error)
     
     peak_times = []
@@ -57,15 +57,21 @@ def calc_windspeed(dataset, axis=0, position=[0,.165], max_error=0.001):
     
     for key in keys:
         odor_trace = dataset.odor_traces[key]
+        calc_peak_of_odor_trace(odor_trace)
         peak_times.append(odor_trace.peak_time)
         positions.append(odor_trace.position[axis])
         
     peak_times = np.array(peak_times)
     positions = np.array(positions)
     
-    slope, intercept = fit_data.linear_fit(positions, peak_times, plot=True)
+    linearmodel = data_fit.models.LinearModel()
+    linearmodel.fit(positions, peak_times, method='optimize')
+    slope = linearmodel.parameters['slope']
+    intercept = linearmodel.parameters['intercept']
     
     dataset.windspeed = slope
+    
+    print 'Wind Speed: ', dataset.windspeed
     
     return positions, peak_times
     
